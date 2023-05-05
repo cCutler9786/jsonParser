@@ -1,9 +1,11 @@
+import java.util.HashMap;
+
 public class MapToken extends Token{
     private static final String TOKEN_TYPE = "MAP_TOKEN";
-    private String value;
+    private HashMap<StringToken, Token> value;
 
-    public MapToken(String value){
-        super(TOKEN_TYPE, value);
+    public MapToken(HashMap<StringToken, Token> value){
+        super(TOKEN_TYPE, value.toString());
         this.value = value;
     }
 }

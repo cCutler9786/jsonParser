@@ -16,6 +16,6 @@ public abstract class Token{
     }
 
     public String toString(){
-        return "Token: "+TOKEN_TYPE+", Contains: "+value;
+        return TOKEN_TYPE+" = "+value;
     }
 }
