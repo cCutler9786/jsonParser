@@ -6,4 +6,8 @@ public class StringToken extends Token{
         super(TOKEN_TYPE, value);
         this.value = value;
     }
+
+    public String getValue(){
+        return value;
+    }
 }
