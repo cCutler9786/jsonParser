@@ -39,7 +39,7 @@ public class Lexer {
 
         StringBuilder placeHolder = new StringBuilder(); // The text inside the key or value
         StringToken key = null; // the key for the hashMap
-        Token value; // the value for the hashMap
+        Token value = null; // the value for the hashMap
 
         while((currChar = nextChar()) != 0) {
             if (currChar == '"') { // The start of a string value of the start of a key
@@ -57,6 +57,8 @@ public class Lexer {
                     currHashMap.put(key, value);
                 }else if(pastEqual){ // start of the value
                     onValue = true;
+                }else if (value != null) {
+                    throw new Exception("Unexpected Token at index "+index+", Expected \",\" got TOKEN");
                 }else{ // Error missed the equal token ":"
                     throw new Exception("Missing EQUAL_TOKEN \":\" after \""+key.getValue()+"\" at index "+index);
                 }
@@ -66,8 +68,11 @@ public class Lexer {
                 return new MapToken(currHashMap);
             }else if (onKey || onValue){ // the inside text of the key or value
                 placeHolder.append(currChar);
-            }else if(currChar == ','){
-                /* @todo make an error check for a , and if its in the right place */
+            }else if(currChar == ','){ // Checks if the "," is at the right place at then end of the line
+                if(value == null){
+                    throw new Exception("Unexpected Token \",\" at index "+index);
+                }
+                value = null;
                 key = null;
             }
         }
