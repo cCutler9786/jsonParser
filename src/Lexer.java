@@ -22,8 +22,7 @@ public class Lexer {
         }else if (currChar == ' '){ // Skip blank spaces
             tokenize();
         }else{ // Ran into a value, and it did not start the hashmap object so it prints an error and tells you where it is
-            System.out.println("Did not have an open Object for the first next to " + currChar + " At index: "+index);
-            return null;
+            throw new Exception("Did not have an open HashMap Token for the first character next to " + currChar + " At index: "+index);
         }
         return tokens;
     }
@@ -37,6 +36,7 @@ public class Lexer {
         boolean onValue = false;
         boolean pastEqual = false;
         boolean onNumber = false;
+        boolean onUndefinedWord = false;
 
         StringBuilder placeHolder = new StringBuilder(); // The text inside the key or value
         StringToken key = null; // the key for the hashMap
@@ -71,7 +71,7 @@ public class Lexer {
             }else if(currChar == '}'){ // End of this hashmap
                 return new MapToken(currHashMap);
             }else if (onKey || onValue){ // the inside text of the key or value
-                if(onNumber && !isNumber(currChar)){ // Checks its a number and adds it if number is done
+                if(onNumber && !isNumber(currChar)){ // Checks it's a number and adds it if number is done
                     onValue = false;
                     value = new DoubleToken(Double.parseDouble(placeHolder.toString()));
                     placeHolder = new StringBuilder();
@@ -81,6 +81,22 @@ public class Lexer {
                     value = null;
                     key = null;
                     onNumber = false;
+                }else if(onUndefinedWord && !Character.isLetter(currChar)) {
+                    onValue = false;
+                    if(placeHolder.toString().equals("true")){
+                        value = new BoolToken(true);
+                    }else if(placeHolder.toString().equals("false")){
+                        value = new BoolToken(false);
+                    }else{
+                        throw new Exception("Boolean type error at index "+index+", Expected boolean got \""+placeHolder+"\"");
+                    }
+                    placeHolder = new StringBuilder();
+                    pastEqual = false;
+                    currHashMap.put(key, value);
+
+                    value = null;
+                    key = null;
+                    onUndefinedWord = false;
                 }else {
                     placeHolder.append(currChar);
                 }
@@ -93,6 +109,10 @@ public class Lexer {
             }else if(key != null && (value == null && isNumber(currChar))){ // if the value is a number
                 onValue = true;
                 onNumber = true;
+                placeHolder.append(currChar);
+            }else if(key != null && Character.isLetter(currChar)){
+                onValue = true;
+                onUndefinedWord = true;
                 placeHolder.append(currChar);
             }
         }

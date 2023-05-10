@@ -1,7 +1,7 @@
 public class Main {
     public static void main(String[] args) throws Exception {
         String JSONexample = "{ " +
-                "\"Menu\": 123," +
+                "\"Menu\": falsef," +
                 "\"Drinks\": \"Soda\"," +
                 "\"Food\": \"Steak\","+
                 "}";
