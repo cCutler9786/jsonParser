@@ -29,20 +29,23 @@ public class Lexer {
     }
 
     private MapToken mapToken() throws Exception {
+
         HashMap<StringToken, Token> currHashMap = new HashMap<>(); // For the MapToken when created
 
         // Checks what part of the string we are in
         boolean onKey = false;
         boolean onValue = false;
         boolean pastEqual = false;
-
+        boolean onNumber = false;
 
         StringBuilder placeHolder = new StringBuilder(); // The text inside the key or value
         StringToken key = null; // the key for the hashMap
         Token value = null; // the value for the hashMap
 
+
         while((currChar = nextChar()) != 0) {
             if (currChar == '"') { // The start of a string value of the start of a key
+
                 if (!onKey && !pastEqual && key == null) { // Start of a key
                     onKey = true;
                 } else if(onKey){ // end of the key
@@ -62,18 +65,35 @@ public class Lexer {
                 }else{ // Error missed the equal token ":"
                     throw new Exception("Missing EQUAL_TOKEN \":\" after \""+key.getValue()+"\" at index "+index);
                 }
+
             }else if(currChar == ':'){ // equal the value that comes next
                 pastEqual = true;
             }else if(currChar == '}'){ // End of this hashmap
                 return new MapToken(currHashMap);
             }else if (onKey || onValue){ // the inside text of the key or value
-                placeHolder.append(currChar);
+                if(onNumber && !isNumber(currChar)){ // Checks its a number and adds it if number is done
+                    onValue = false;
+                    value = new DoubleToken(Double.parseDouble(placeHolder.toString()));
+                    placeHolder = new StringBuilder();
+                    pastEqual = false;
+                    currHashMap.put(key, value);
+
+                    value = null;
+                    key = null;
+                    onNumber = false;
+                }else {
+                    placeHolder.append(currChar);
+                }
             }else if(currChar == ','){ // Checks if the "," is at the right place at then end of the line
                 if(value == null){
                     throw new Exception("Unexpected Token \",\" at index "+index);
                 }
                 value = null;
                 key = null;
+            }else if(key != null && (value == null && isNumber(currChar))){ // if the value is a number
+                onValue = true;
+                onNumber = true;
+                placeHolder.append(currChar);
             }
         }
         // The hashMap is invalid and should be doubled check for an error
@@ -86,5 +106,15 @@ public class Lexer {
             return 0;
         }
         return json.charAt(index - 1);
+    }
+
+    private boolean isNumber(char chr){
+        if(chr == '.'){ return true; }
+        try{
+            Integer.parseInt(String.valueOf(chr));
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 }
